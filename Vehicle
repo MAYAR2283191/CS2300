@@ -56,7 +56,7 @@ public class Vehicle {
     public int getYear() {
         return year;
     }
-    // changes the year and it has to be a vaild year
+    // changes the year and it has to be a valid year
     public void setYear(int year) {
         if (year < 1886 || year > 2027) {
             throw new IllegalArgumentException("Invalid vehicle year: " + year);
