@@ -1,0 +1,342 @@
+
+
+import java.util.ArrayList;
+import java.util.Scanner;
+ // this class manages the vehicles of the agency (add, show, search, rent and return).
+ //  It also runs the menus for the agent and the client.
+public class RentalManagement{
+ 
+    // List to store all vehicles
+    private ArrayList<Vehicle> vehicles = new ArrayList<>();
+ 
+    // Scanner to read the input from the user
+    private Scanner input = new Scanner(System.in);
+
+    // Main method: the program starts here
+    public static void main(String[] args) {
+        RentalManagement agency = new RentalManagement();
+        agency.loadSampleData();
+        agency.mainMenu();
+    }
+ 
+    // Add the sample vehicles when the program starts
+    public void loadSampleData() {
+        vehicles.add(new Vehicle("Emgrand", "Geely", 2013, true, 133.0));
+        vehicles.add(new Vehicle("Mustang", "Ford", 2014, false, 190.0));
+        vehicles.add(new Vehicle("Yukon", "GMC", 2002, false, 190.0));
+        vehicles.add(new Vehicle("Sonata", "Hyundai", 2007, true, 165.0));
+        vehicles.add(new Vehicle("Optima", "Kia", 2022, true, 165.0));
+        vehicles.add(new Vehicle("Camry", "Toyota", 2009, false, 181.0));
+        vehicles.add(new Vehicle("Patrol", "Nissan", 2001, false, 187.0));
+        vehicles.add(new Vehicle("Accord", "Honda", 2003, false, 184.0));
+        vehicles.add(new Vehicle("LS", "Lexus", 2005, false, 180.0));
+    }
+    
+    // Methods of the agency
+    
+    // Add a new vehicle (it is not added if the same name and brand already exist)
+    public void addVehicle(Vehicle vehicle) {
+        if (findExactVehicle(vehicle.getName(), vehicle.getBrand()) != null) {
+            System.out.println("Error: This vehicle already exists.");
+        } else {
+            vehicles.add(vehicle);
+            System.out.println("Vehicle added successfully!");
+        }
+    }
+ 
+    // Display available vehicles
+    public void listAvailableVehicles() {
+        boolean found = false;
+ 
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.isAvailable()) {
+                displayVehicle(vehicle);
+                found = true;
+            }
+        }
+        // if no vehicle was displayed, tell the user
+        if (!found) {
+            System.out.println("Not Found");
+        }
+    }
+ 
+    // Rent a vehicle: it must exist and be available, then available becomes false
+    public void rentVehicle(String name, String brand) {
+        Vehicle vehicle = findExactVehicle(name, brand);
+ 
+        if (vehicle == null) {
+            System.out.println("Error: Vehicle not found.");
+        } else if (!vehicle.isAvailable()) {
+            System.out.println("Error: Vehicle is already rented.");
+        } else {
+            vehicle.setAvailable(false);
+            System.out.println("Vehicle rented successfully!");
+        }
+    }
+ 
+    // Return a vehicle: it must exist and be rented, then available becomes true
+    public void returnVehicle(String name, String brand) {
+        Vehicle vehicle = findExactVehicle(name, brand);
+ 
+        if (vehicle == null) {
+            System.out.println("Error: Vehicle not found.");
+        } else if (vehicle.isAvailable()) {
+            System.out.println("Error: Vehicle was not rented.");
+        } else {
+            vehicle.setAvailable(true);
+            System.out.println("Vehicle returned successfully!");
+        }
+    }
+ 
+    // Search for a vehicle by name
+    public void findVehicleByName(String name) {
+        boolean found = false;
+ 
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getName().equalsIgnoreCase(name)) {
+                displayVehicle(vehicle);
+                found = true;
+            }
+        }
+ 
+        if (!found) {
+            System.out.println("Not Found");
+        }
+    }
+ 
+    // Search for vehicles by brand
+    public void findVehicleByBrand(String brand) {
+        boolean found = false;
+ 
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getBrand().equalsIgnoreCase(brand)) {
+                displayVehicle(vehicle);
+                found = true;
+            }
+        }
+ 
+        if (!found) {
+            System.out.println("Not Found");
+        }
+    }
+ 
+    // Search for vehicles by name OR brand (used in the Agent menu)
+    public void findVehicleByNameOrBrand(String text) {
+        boolean found = false;
+ 
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getName().equalsIgnoreCase(text)
+                    || vehicle.getBrand().equalsIgnoreCase(text)) {
+                displayVehicle(vehicle);
+                found = true;
+            }
+        }
+ 
+        if (!found) {
+            System.out.println("Not Found");
+        }
+    }
+ 
+    // Find one vehicle by its name and brand together. Returns null if not found
+    private Vehicle findExactVehicle(String name, String brand) {
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getName().equalsIgnoreCase(name)
+                    && vehicle.getBrand().equalsIgnoreCase(brand)) {
+                return vehicle;
+            }
+        }
+        return null;
+    }
+ 
+    // Display vehicle details
+    private void displayVehicle(Vehicle vehicle) {
+        System.out.println("Name: " + vehicle.getName());
+        System.out.println("Brand: " + vehicle.getBrand());
+        System.out.println("Year: " + vehicle.getYear());
+        System.out.println("Daily Rate: " + vehicle.getDailyRate());
+        System.out.println("Insurance Included: "
+                + vehicle.isInsuranceIncluded());
+        System.out.println("Available: " + vehicle.isAvailable());
+        System.out.println("-------------------------");
+    }
+ 
+    // Menus (user interface)
+ 
+    // Main menu: the user chooses the role. It repeats until the user chooses Exit
+    public void mainMenu() {
+        boolean running = true;
+ 
+        while (running) {
+            System.out.println("\n=== Welcome to Vehicle Rental System ===");
+            System.out.println("Select your role:");
+            System.out.println("1. Agent");
+            System.out.println("2. Client");
+            System.out.println("3. Exit");
+            int choice = readInt("Enter your choice: ");
+ 
+            switch (choice) {
+                case 1:
+                    agentMenu();
+                    break;
+                case 2:
+                    clientMenu();
+                    break;
+                case 3:
+                    System.out.println("Thank you for using the system. Goodbye!");
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Error: Invalid choice. Please select 1-3.");
+            }
+        }
+    }
+ 
+    // Agent menu: the agent can use all the functions of the system
+    public void agentMenu() {
+        boolean back = false;
+ 
+        while (!back) {
+            System.out.println("\n--- Agent ---");
+            System.out.println("1. Add a New Vehicle");
+            System.out.println("2. Display Available Vehicles");
+            System.out.println("3. Search for a Vehicle");
+            System.out.println("4. Rent a Vehicle");
+            System.out.println("5. Return a Vehicle");
+            System.out.println("6. Back to Main Menu");
+            int choice = readInt("Enter your choice: ");
+ 
+            switch (choice) {
+                case 1:
+                    addNewVehicle();
+                    break;
+                case 2:
+                    System.out.println("\nAvailable vehicles:");
+                    listAvailableVehicles();
+                    break;
+                case 3:
+                    String text = readText("Enter vehicle name or brand: ");
+                    findVehicleByNameOrBrand(text);
+                    break;
+                case 4:
+                    String rentName = readText("Enter vehicle name: ");
+                    String rentBrand = readText("Enter vehicle brand: ");
+                    rentVehicle(rentName, rentBrand);
+                    break;
+                case 5:
+                    String retName = readText("Enter vehicle name: ");
+                    String retBrand = readText("Enter vehicle brand: ");
+                    returnVehicle(retName, retBrand);
+                    break;
+                case 6:
+                    back = true;
+                    break;
+                default:
+                    System.out.println("Error: Invalid choice. Please select 1-6.");
+            }
+        }
+    }
+ 
+    // Client menu: the client can only search by name or brand
+    public void clientMenu() {
+        boolean back = false;
+ 
+        while (!back) {
+            System.out.println("\n--- Client ---");
+            System.out.println("1. Search for a Vehicle by name");
+            System.out.println("2. Search for a Vehicle by brand");
+            System.out.println("3. Back to Main Menu");
+            int choice = readInt("Enter your choice: ");
+ 
+            switch (choice) {
+                case 1:
+                    String name = readText("Enter vehicle name: ");
+                    findVehicleByName(name);
+                    break;
+                case 2:
+                    String brand = readText("Enter vehicle brand: ");
+                    findVehicleByBrand(brand);
+                    break;
+                case 3:
+                    back = true;
+                    break;
+                default:
+                    System.out.println("Error: Invalid choice. Please select 1-3.");
+            }
+        }
+    }
+ 
+    // Ask the agent for the information of the new vehicle, then add it
+    public void addNewVehicle() {
+        String name = readText("Enter vehicle name: ");
+        String brand = readText("Enter vehicle brand: ");
+        int year = readInt("Enter manufacturing year: ");
+        // check that year is in a reasonable range
+        if (year < 1980 || year > 2027) {
+            System.out.println("Error: Year must be between 1980 and 2027.");
+            return;
+        }
+        // keep asking until the agent enters 1 or 2
+        int insurance = 0;
+        while (insurance != 1 && insurance != 2) {
+            insurance = readInt("Is insurance included? (1 = Yes, 2 = No): ");
+            if (insurance != 1 && insurance != 2) {
+                System.out.println("Error: Please enter 1 or 2.");
+            }
+        }
+        // the daily rate must be more than zero
+        double rate = readDouble("Enter daily rate: ");
+        if (rate <= 0) {
+            System.out.println("Error: Daily rate must be greater than zero.");
+            return;
+        }
+        // change choice 1 or 2 into true or false then add the vehicle
+        boolean insuranceIncluded = (insurance == 1);
+        addVehicle(new Vehicle(name, brand, year, insuranceIncluded, rate));
+    }
+    // Methods to read the input (with error handling)
+    
+    // Read a whole number. If the input is wrong, ask again
+    public int readInt(String message) {
+        while (true) {
+            System.out.print(message);
+            try {
+                int number = input.nextInt();
+                input.nextLine();
+                return number;
+            } catch (Exception e) {
+                // the input was not a number,so show an error and ask again 
+                input.nextLine();
+                System.out.println("Error: Invalid input. Please enter a whole number.");
+            }
+        }
+    }
+ 
+    // Read a decimal number. If the input is wrong, ask again
+    public double readDouble(String message) {
+        while (true) {
+            System.out.print(message);
+            try {
+                double number = input.nextDouble();
+                input.nextLine();
+                return number;
+            } catch (Exception e) {
+                // the input was not a number, so show an error and ask again
+                input.nextLine();
+                System.out.println("Error: Invalid input. Please enter a number.");
+            }
+        }
+    }
+ 
+    // Read a line of text. If it is empty, ask again
+    public String readText(String message) {
+        String text = "";
+        while (text.equals("")) {
+            System.out.print(message);
+            text = input.nextLine().trim();
+            if (text.equals("")) {
+                System.out.println("Error: Input cannot be empty.");
+            }
+        }
+        return text;
+    }
+}
